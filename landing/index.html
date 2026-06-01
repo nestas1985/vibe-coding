@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Станислав — Сайты, боты и автоматизация для бизнеса</title>
+  <meta name="description" content="Создаю сайты, Telegram-ботов и AI-автоматизацию для малого бизнеса. Под ключ, за 2–4 недели.">
+  <meta property="og:title" content="Станислав — Цифровой мастер">
+  <meta property="og:description" content="Сайты, боты и автоматизация. Один специалист вместо агентства.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
+  <style>
+    /* ── VARIABLES ── */
+    :root {
+      --bg:       #0A0A0F;
+      --bg2:      #12121A;
+      --accent:   #6049EA;
+      --teal:     #00C9B1;
+      --glow:     rgba(96,73,234,.4);
+      --glass:    rgba(255,255,255,.06);
+      --border:   rgba(255,255,255,.10);
+      --text:     #F4F4F4;
+      --text2:    #94A3B8;
+      --text3:    #64748B;
+      --r:        16px;
+      --r-sm:     10px;
+      --ease:     .2s ease;
+      --ease-lg:  .45s ease;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* static ambient blobs */
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background:
+        radial-gradient(ellipse 60% 50% at 15% 55%, rgba(96,73,234,.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 85% 20%, rgba(0,201,177,.05) 0%, transparent 60%);
+      pointer-events:none; z-index:0;
+    }
+
+    /* cursor glow */
+    #cg {
+      position:fixed; width:480px; height:480px; border-radius:50%;
+      background: radial-gradient(circle, rgba(96,73,234,.12) 0%, transparent 70%);
+      pointer-events:none; transform:translate(-50%,-50%);
+      transition: left .7s ease, top .7s ease; z-index:0;
+    }
+
+    /* ── TYPE ── */
+    h1,h2,h3,h4 {
+      font-family:'Space Grotesk', system-ui, sans-serif;
+      font-weight:700; line-height:1.2;
+    }
+    h1 { font-size: clamp(2.1rem, 4.5vw, 3.8rem); }
+    h2 { font-size: clamp(1.7rem, 3vw, 2.6rem); }
+    h3 { font-size: clamp(1rem, 1.8vw, 1.3rem); }
+    p  { color: var(--text2); }
+    a  { color: var(--teal); text-decoration:none; transition: color var(--ease); }
+    a:hover { color: var(--text); }
+
+    /* ── LAYOUT ── */
+    .wrap { max-width:1160px; margin:0 auto; padding:0 24px; }
+    section { padding:96px 0; position:relative; z-index:1; }
+    .tag {
+      font-family:'Space Mono', monospace; font-size:.73rem;
+      color: var(--teal); text-transform:uppercase; letter-spacing:3px;
+      display:block; margin-bottom:12px;
+    }
+    .sub { font-size:1.05rem; color:var(--text2); max-width:540px; margin-bottom:60px; }
+    .divider { height:1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:15px 30px; border-radius:var(--r-sm);
+      font-family:'Space Grotesk',sans-serif; font-size:.97rem; font-weight:600;
+      cursor:pointer; border:none; text-decoration:none;
+      transition: transform var(--ease), box-shadow var(--ease);
+    }
+    .btn-p {
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      color:#fff; box-shadow: 0 0 22px var(--glow);
+    }
+    .btn-p:hover { transform:scale(1.04) translateY(-2px); box-shadow: 0 0 38px var(--glow), 0 8px 28px rgba(96,73,234,.3); color:#fff; }
+    .btn-o {
+      background:transparent; color:var(--text);
+      border:1px solid var(--border);
+    }
+    .btn-o:hover { background:var(--glass); color:var(--text); transform:translateY(-2px); }
+
+    /* ── CARD ── */
+    .card {
+      background:var(--glass); backdrop-filter:blur(12px);
+      border:1px solid var(--border); border-radius:var(--r); padding:28px;
+      transition: transform var(--ease-lg), box-shadow var(--ease-lg), border-color var(--ease-lg);
+    }
+    .card:hover { transform:translateY(-6px); box-shadow:0 20px 56px rgba(96,73,234,.14); border-color:rgba(96,73,234,.28); }
+
+    /* ── REVEAL ── */
+    .rv { opacity:0; transform:translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+    .rv.on { opacity:1; transform:translateY(0); }
+    .d1{transition-delay:.1s} .d2{transition-delay:.2s}
+    .d3{transition-delay:.3s} .d4{transition-delay:.4s}
+
+    /* ══════════════════════════════
+       HEADER
+    ══════════════════════════════ */
+    header {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      padding:20px 0;
+      transition: background var(--ease-lg), backdrop-filter var(--ease-lg), padding var(--ease-lg);
+    }
+    header.sc {
+      background:rgba(10,10,15,.92); backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border); padding:13px 0;
+    }
+    .hd { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); }
+    .logo span { color:var(--teal); }
+
+    nav { display:flex; align-items:center; gap:28px; }
+    nav a { font-size:.88rem; font-weight:500; color:var(--text2); }
+    nav a:hover { color:var(--text); }
+
+    /* burger */
+    .brg { display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:4px; }
+    .brg span { display:block; width:24px; height:2px; background:var(--text); transition: all .3s; }
+    .brg.op span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .brg.op span:nth-child(2){ opacity:0; }
+    .brg.op span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    /* mobile nav overlay */
+    .mnav {
+      display:none; position:fixed; inset:0;
+      background:rgba(10,10,15,.98); z-index:99;
+      flex-direction:column; align-items:center; justify-content:center; gap:36px;
+    }
+    .mnav.op { display:flex; }
+    .mnav a { font-family:'Space Grotesk',sans-serif; font-size:1.8rem; font-weight:700; color:var(--text2); }
+    .mnav a:hover, .mnav a.hi { color:var(--teal); }
+
+    /* ══════════════════════════════
+       HERO
+    ══════════════════════════════ */
+    #hero { min-height:100vh; display:flex; align-items:center; padding:120px 0 80px; }
+    .hero-g { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center; }
+
+    .hero-pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 16px; background:var(--glass); border:1px solid var(--border);
+      border-radius:100px; font-size:.83rem; color:var(--text2); margin-bottom:26px;
+    }
+    .dot { width:8px; height:8px; border-radius:50%; background:var(--teal); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+    .hero-title { margin-bottom:22px; }
+    .grad { background:linear-gradient(135deg,var(--accent),var(--teal)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    .hero-desc { font-size:1.05rem; color:var(--text2); max-width:480px; margin-bottom:14px; }
+
+    .stats { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:36px; }
+    .stat { display:flex; align-items:center; gap:7px; font-size:.83rem; color:var(--text2); }
+    .stat::before { content:'✦'; color:var(--teal); }
+
+    .hero-btns { display:flex; gap:14px; flex-wrap:wrap; }
+
+    /* photo placeholder */
+    .ph {
+      width:340px; height:420px; border-radius:22px; margin:0 auto;
+      background:linear-gradient(145deg, var(--bg2), rgba(96,73,234,.12));
+      border:1px solid var(--border);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+      position:relative; overflow:hidden;
+    }
+    .ph::before {
+      content:''; position:absolute; top:-25%; right:-15%; width:260px; height:260px;
+      background:radial-gradient(circle, rgba(96,73,234,.2), transparent 70%); border-radius:50%;
+    }
+    .ph::after {
+      content:''; position:absolute; bottom:-20%; left:-15%; width:220px; height:220px;
+      background:radial-gradient(circle, rgba(0,201,177,.15), transparent 70%); border-radius:50%;
+    }
+    .ava {
+      width:90px; height:90px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      display:flex; align-items:center; justify-content:center; z-index:1;
+    }
+    .ava svg { width:48px; height:48px; fill:#fff; }
+    .ph-txt { color:var(--text3); font-size:.82rem; z-index:1; }
+
+    .fl {
+      position:absolute; background:var(--glass); backdrop-filter:blur(12px);
+      border:1px solid var(--border); border-radius:12px; padding:11px 15px;
+      font-size:.82rem; white-space:nowrap;
+    }
+    .fl.tl { top:36px; left:-24px; }
+    .fl.br { bottom:52px; right:-16px; }
+
+    /* ══════════════════════════════
+       PROOF
+    ══════════════════════════════ */
+    #proof { padding:56px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .proof-g { display:grid; grid-template-columns:repeat(3,1fr); }
+    .proof-item { text-align:center; padding:36px 20px; position:relative; }
+    .proof-item:not(:last-child)::after {
+      content:''; position:absolute; right:0; top:20%; height:60%; width:1px; background:var(--border);
+    }
+    .pn {
+      font-family:'Space Grotesk',sans-serif; font-size:clamp(2.4rem,4.5vw,3.8rem); font-weight:700;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      line-height:1; margin-bottom:8px;
+    }
+    .pl { font-size:.92rem; color:var(--text2); }
+
+    /* ══════════════════════════════
+       SERVICES
+    ══════════════════════════════ */
+    .svc-g { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+    .svc-icon {
+      width:50px; height:50px; border-radius:12px;
+      background:linear-gradient(135deg,rgba(96,73,234,.2),rgba(0,201,177,.2));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem; margin-bottom:18px;
+    }
+    .svc-card h3 { margin-bottom:10px; }
+    .svc-card p  { font-size:.93rem; margin-bottom:22px; }
+    .svc-foot {
+      display:flex; justify-content:space-between; align-items:center;
+      padding-top:18px; border-top:1px solid var(--border);
+    }
+    .price { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.05rem; color:var(--teal); }
+    .dur   { font-size:.78rem; color:var(--text3); }
+
+    /* ══════════════════════════════
+       PORTFOLIO
+    ══════════════════════════════ */
+    #portfolio { background:rgba(18,18,26,.3); }
+    .port-g { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-bottom:44px; }
+    .port-card { overflow:hidden; cursor:pointer; }
+    .port-prev {
+      height:190px; border-radius:var(--r-sm); margin-bottom:18px;
+      overflow:hidden; position:relative;
+    }
+    .port-img {
+      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+      transition: transform var(--ease-lg); position:relative;
+    }
+    .port-card:hover .port-img { transform:scale(1.06); }
+    .port-img::before {
+      content:''; position:absolute; inset:0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236049EA' fill-opacity='0.09'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .port-lbl {
+      font-family:'Space Mono',monospace; font-size:.72rem; color:var(--teal);
+      background:rgba(0,201,177,.1); border:1px solid rgba(0,201,177,.25);
+      padding:5px 12px; border-radius:100px; z-index:1; position:relative;
+    }
+    .port-badge {
+      position:absolute; top:10px; right:10px;
+      background:rgba(10,10,15,.82); padding:3px 10px; border-radius:100px;
+      font-size:.72rem; color:var(--text2); z-index:2;
+    }
+    .port-card h3 { margin-bottom:7px; }
+    .port-card p  { font-size:.88rem; margin-bottom:14px; }
+    .port-link {
+      font-size:.88rem; font-weight:600; color:var(--teal);
+      display:inline-flex; align-items:center; gap:5px;
+      transition: gap var(--ease);
+    }
+    .port-link:hover { gap:10px; color:var(--teal); }
+    .port-cta { text-align:center; }
+    .port-cta p { margin-bottom:18px; font-size:.93rem; }
+
+    /* ══════════════════════════════
+       PROCESS
+    ══════════════════════════════ */
+    .proc-g { display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative; }
+    .proc-g::before {
+      content:''; position:absolute; top:35px; left:10%; right:10%; height:1px;
+      background:linear-gradient(90deg,transparent,var(--border),var(--accent),var(--border),transparent);
+    }
+    .step { text-align:center; padding:0 14px; }
+    .step-n {
+      width:70px; height:70px; border-radius:50%;
+      background:var(--bg); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 22px;
+      font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:var(--teal);
+      position:relative; z-index:1;
+    }
+    .step-t { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:600; margin-bottom:8px; }
+    .step-d { font-size:.88rem; color:var(--text2); margin-bottom:10px; }
+    .step-r { font-size:.78rem; color:var(--teal); font-weight:500; }
+
+    /* ══════════════════════════════
+       ABOUT
+    ══════════════════════════════ */
+    #about { background:rgba(18,18,26,.3); }
+    .about-g { display:grid; grid-template-columns:360px 1fr; gap:72px; align-items:center; }
+    .about-ph {
+      width:100%; aspect-ratio:3/4; border-radius:22px;
+      background:linear-gradient(155deg,rgba(96,73,234,.14),rgba(0,201,177,.07));
+      border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+    }
+    .about-ph::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:55%;
+      background:linear-gradient(to top, rgba(96,73,234,.1),transparent);
+    }
+    .about-ava {
+      width:74px; height:74px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      display:flex; align-items:center; justify-content:center; z-index:1;
+    }
+    .about-ava svg { width:40px; height:40px; fill:#fff; }
+
+    .at { font-size:.98rem; color:var(--text2); margin-bottom:14px; line-height:1.8; }
+    .chips { display:flex; gap:9px; flex-wrap:wrap; margin-bottom:28px; }
+    .chip {
+      padding:7px 15px; background:var(--glass);
+      border:1px solid var(--border); border-radius:100px;
+      font-size:.82rem; color:var(--text2);
+    }
+
+    /* ══════════════════════════════
+       TESTIMONIALS
+    ══════════════════════════════ */
+    .tst-g { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+    .tst-card { display:flex; flex-direction:column; }
+    .tst-q { font-size:2rem; color:var(--accent); line-height:1; margin-bottom:14px; font-family:'Space Grotesk',sans-serif; }
+    .tst-txt { font-size:.93rem; color:var(--text2); line-height:1.7; margin-bottom:22px; flex:1; }
+    .tst-auth { display:flex; align-items:center; gap:12px; }
+    .tst-ava {
+      width:42px; height:42px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:.86rem; color:#fff;
+    }
+    .tst-name { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:.88rem; margin-bottom:2px; }
+    .tst-role { font-size:.78rem; color:var(--text3); }
+
+    /* ══════════════════════════════
+       FAQ
+    ══════════════════════════════ */
+    #faq { background:rgba(18,18,26,.3); }
+    .faq-list { max-width:760px; margin:0 auto; }
+    .faq-item {
+      border:1px solid var(--border); border-radius:var(--r-sm);
+      margin-bottom:10px; overflow:hidden;
+      background:var(--glass); transition:border-color var(--ease);
+    }
+    .faq-item.op { border-color:rgba(96,73,234,.32); }
+    .faq-q {
+      width:100%; padding:19px 22px;
+      display:flex; align-items:center; justify-content:space-between;
+      background:none; border:none; color:var(--text);
+      font-family:'Space Grotesk',sans-serif; font-size:.97rem; font-weight:600;
+      text-align:left; cursor:pointer; gap:14px;
+    }
+    .faq-ic {
+      width:26px; height:26px; border-radius:50%;
+      border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; font-size:1.1rem;
+      transition: transform var(--ease), background var(--ease), border-color var(--ease);
+    }
+    .faq-item.op .faq-ic { transform:rotate(45deg); background:var(--accent); border-color:var(--accent); }
+    .faq-a {
+      max-height:0; overflow:hidden;
+      transition: max-height .35s ease, padding .35s ease;
+      padding:0 22px;
+    }
+    .faq-a.op { max-height:260px; padding:0 22px 18px; }
+    .faq-a p { font-size:.93rem; line-height:1.7; }
+
+    /* ══════════════════════════════
+       CONTACT
+    ══════════════════════════════ */
+    #contact { position:relative; }
+    #contact::before {
+      content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:560px; height:280px;
+      background:radial-gradient(ellipse at center,rgba(96,73,234,.1),transparent 70%);
+      pointer-events:none;
+    }
+    .ct-g { display:grid; grid-template-columns:1fr 1fr; gap:72px; align-items:start; }
+    .ct-info p { font-size:.97rem; margin-bottom:36px; line-height:1.75; }
+    .ct-chs { display:flex; flex-direction:column; gap:10px; }
+    .ch {
+      display:flex; align-items:center; gap:12px;
+      padding:15px 18px; background:var(--glass); border:1px solid var(--border);
+      border-radius:var(--r-sm); color:var(--text2); font-size:.93rem;
+      transition: border-color var(--ease), background var(--ease), transform var(--ease), color var(--ease);
+    }
+    .ch:hover { border-color:rgba(96,73,234,.3); background:rgba(96,73,234,.05); color:var(--text); transform:translateX(4px); }
+    .ch-ic {
+      width:34px; height:34px; border-radius:8px; flex-shrink:0;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      display:flex; align-items:center; justify-content:center; font-size:.95rem;
+    }
+
+    /* form */
+    .form-box { background:var(--glass); border:1px solid var(--border); border-radius:var(--r); padding:36px; }
+    .form-ttl { font-family:'Space Grotesk',sans-serif; font-size:1.25rem; font-weight:700; margin-bottom:22px; }
+    .fg { margin-bottom:14px; }
+    .fg label { display:block; font-size:.82rem; color:var(--text2); font-weight:500; margin-bottom:7px; }
+    .fg input, .fg textarea {
+      width:100%; padding:13px 15px;
+      background:rgba(255,255,255,.04); border:1px solid var(--border);
+      border-radius:var(--r-sm); color:var(--text);
+      font-family:'Inter',sans-serif; font-size:.93rem;
+      transition: border-color var(--ease), background var(--ease); outline:none;
+    }
+    .fg input:focus, .fg textarea:focus { border-color:var(--accent); background:rgba(96,73,234,.05); }
+    .fg textarea { resize:vertical; min-height:96px; }
+    .fg input::placeholder, .fg textarea::placeholder { color:var(--text3); }
+    .form-hint { font-size:.78rem; color:var(--text3); margin-top:10px; text-align:center; }
+    .btn-full { width:100%; justify-content:center; margin-bottom:10px; }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    footer { padding:36px 0; border-top:1px solid var(--border); }
+    .ft { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+    .ft-tag { font-size:.83rem; color:var(--text3); margin-top:3px; }
+    .ft-links { display:flex; gap:22px; }
+    .ft-links a { font-size:.88rem; color:var(--text2); }
+    .ft-links a:hover { color:var(--text); }
+    .ft-copy { font-size:.78rem; color:var(--text3); }
+
+    /* ══════════════════════════════
+       MOBILE STICKY CTA
+    ══════════════════════════════ */
+    .mob-cta {
+      display:none; position:fixed; bottom:0; left:0; right:0;
+      padding:13px 20px; text-align:center;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      color:#fff; font-family:'Space Grotesk',sans-serif; font-size:.97rem; font-weight:600;
+      box-shadow: 0 -4px 20px var(--glow); z-index:50;
+    }
+    .mob-cta:hover { color:#fff; }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media(max-width:1024px){
+      .svc-g, .port-g, .tst-g { grid-template-columns:repeat(2,1fr); }
+      .proc-g { grid-template-columns:repeat(2,1fr); gap:36px; }
+      .proc-g::before { display:none; }
+      .about-g { grid-template-columns:260px 1fr; gap:44px; }
+      .ct-g { grid-template-columns:1fr; gap:44px; }
+    }
+    @media(max-width:768px){
+      section { padding:68px 0; }
+      .hero-g { grid-template-columns:1fr; text-align:center; }
+      .hero-desc { margin:0 auto 14px; }
+      .stats { justify-content:center; }
+      .hero-btns { justify-content:center; }
+      .hero-visual { order:-1; }
+      .ph { width:240px; height:290px; }
+      .fl { display:none; }
+      .proof-g { grid-template-columns:1fr; }
+      .proof-item:not(:last-child)::after { right:auto; bottom:0; top:auto; left:20%; width:60%; height:1px; }
+      .svc-g, .port-g, .tst-g, .proc-g { grid-template-columns:1fr; }
+      .about-g { grid-template-columns:1fr; }
+      .about-ph { max-width:240px; margin:0 auto; }
+      nav { display:none; }
+      .brg { display:flex; }
+      .mob-cta { display:block; }
+      footer { padding-bottom:72px; }
+      .ft { flex-direction:column; align-items:flex-start; }
+    }
+    @media(max-width:480px){
+      h1 { font-size:1.95rem; }
+      .wrap { padding:0 16px; }
+      .card { padding:22px; }
+      .form-box { padding:24px 18px; }
+      .hero-btns { flex-direction:column; width:100%; }
+      .hero-btns .btn { width:100%; justify-content:center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cg"></div>
+
+<!-- ══ HEADER ══ -->
+<header id="hdr">
+  <div class="wrap">
+    <div class="hd">
+      <a href="#hero" class="logo">Станислав<span>.</span></a>
+      <nav>
+        <a href="#services">Услуги</a>
+        <a href="#portfolio">Портфолио</a>
+        <a href="#process">Процесс</a>
+        <a href="#about">О себе</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact" class="btn btn-p" style="padding:10px 20px;font-size:.86rem">Написать →</a>
+      </nav>
+      <button class="brg" id="brg" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mnav" id="mnav">
+  <a href="#services">Услуги</a>
+  <a href="#portfolio">Портфолио</a>
+  <a href="#process">Процесс</a>
+  <a href="#about">О себе</a>
+  <a href="#faq">FAQ</a>
+  <a href="#contact" class="hi">Написать →</a>
+</div>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-g">
+      <div>
+        <div class="hero-pill rv">
+          <span class="dot"></span> Открыт для новых проектов
+        </div>
+        <h1 class="hero-title rv d1">
+          Делаю так, чтобы ваш бизнес
+          <span class="grad"> работал без вас</span>
+        </h1>
+        <p class="hero-desc rv d2">
+          Создаю сайты, Telegram-ботов и AI-автоматизацию для малого бизнеса. Один специалист вместо агентства — под ключ, за 2–4 недели.
+        </p>
+        <div class="stats rv d2">
+          <span class="stat">10+ проектов</span>
+          <span class="stat">Ответ за 2 часа</span>
+          <span class="stat">Работаю один</span>
+        </div>
+        <div class="hero-btns rv d3">
+          <a href="#contact" class="btn btn-p">Обсудить задачу</a>
+          <a href="#portfolio" class="btn btn-o">Посмотреть работы</a>
+        </div>
+      </div>
+
+      <div class="hero-visual rv d2" style="position:relative;display:flex;justify-content:center">
+        <div class="ph">
+          <div class="ava">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <span class="ph-txt">← ваше фото здесь</span>
+        </div>
+        <div class="fl tl">🚀 Лендинг за 7 дней</div>
+        <div class="fl br">🤖 Бот за 3 дня</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ PROOF ══ -->
+<section id="proof">
+  <div class="wrap">
+    <div class="proof-g">
+      <div class="proof-item rv">
+        <div class="pn" data-target="10" data-suffix="+">0</div>
+        <div class="pl">запущенных проектов</div>
+      </div>
+      <div class="proof-item rv d2">
+        <div class="pn" data-target="2" data-suffix=" ч">0</div>
+        <div class="pl">среднее время ответа</div>
+      </div>
+      <div class="proof-item rv d3">
+        <div class="pn" data-target="100" data-suffix="%">0</div>
+        <div class="pl">проектов сданы в срок</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ SERVICES ══ -->
+<section id="services">
+  <div class="wrap">
+    <span class="tag rv">Что делаю</span>
+    <h2 class="rv">Три направления</h2>
+    <p class="sub rv">Закрываю задачи, которые раньше требовали целую команду — один специалист, один результат.</p>
+    <div class="svc-g">
+      <div class="card svc-card rv d1">
+        <div class="svc-icon">🌐</div>
+        <h3>Сайты и лендинги</h3>
+        <p>Создаю сайты, которые быстро загружаются и превращают посетителей в клиентов. Для визиток, лендингов и небольших интернет-магазинов.</p>
+        <div class="svc-foot">
+          <span class="price">от 15 000 ₽</span>
+          <span class="dur">от 1 недели</span>
+        </div>
+      </div>
+      <div class="card svc-card rv d2">
+        <div class="svc-icon">🤖</div>
+        <h3>Telegram-боты</h3>
+        <p>Автоматизирую переписку: бот принимает заявки, отвечает на вопросы и записывает клиентов — 24/7, без вашего участия.</p>
+        <div class="svc-foot">
+          <span class="price">от 10 000 ₽</span>
+          <span class="dur">от 3 дней</span>
+        </div>
+      </div>
+      <div class="card svc-card rv d3">
+        <div class="svc-icon">⚡</div>
+        <h3>AI-автоматизация</h3>
+        <p>Если сотрудники тратят часы на однотипные задачи — это можно автоматизировать. Настраиваю умных помощников под ваш бизнес.</p>
+        <div class="svc-foot">
+          <span class="price">от 25 000 ₽</span>
+          <span class="dur">от 2 недель</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ PORTFOLIO ══ -->
+<section id="portfolio">
+  <div class="wrap">
+    <span class="tag rv">Портфолио</span>
+    <h2 class="rv">Примеры работ</h2>
+    <p class="sub rv">Учебные проекты — результаты реального кода, не макеты.</p>
+    <div class="port-g">
+      <div class="card port-card rv d1">
+        <div class="port-prev">
+          <div class="port-img" style="background:linear-gradient(135deg,rgba(96,73,234,.2),rgba(180,150,80,.12))">
+            <span class="port-lbl">vizitka.html</span>
+          </div>
+          <span class="port-badge">Учебный проект</span>
+        </div>
+        <h3>Визитка риелтора</h3>
+        <p>Личная страница с тёмным дизайном, анимациями и блоком услуг.</p>
+        <a href="../vizitka.html" target="_blank" class="port-link">Посмотреть →</a>
+      </div>
+      <div class="card port-card rv d2">
+        <div class="port-prev">
+          <div class="port-img" style="background:linear-gradient(135deg,rgba(60,30,120,.25),rgba(0,201,177,.1))">
+            <span class="port-lbl">landing.html</span>
+          </div>
+          <span class="port-badge">Учебный проект</span>
+        </div>
+        <h3>Лендинг TaskFlow</h3>
+        <p>Продающий лендинг для SaaS-продукта с фиолетовой темой и тарифами.</p>
+        <a href="../landing.html" target="_blank" class="port-link">Посмотреть →</a>
+      </div>
+      <div class="card port-card rv d3">
+        <div class="port-prev">
+          <div class="port-img" style="background:linear-gradient(135deg,rgba(0,140,90,.18),rgba(96,73,234,.14))">
+            <span class="port-lbl">bot / API</span>
+          </div>
+          <span class="port-badge">В разработке</span>
+        </div>
+        <h3>Telegram-бот для риелторов</h3>
+        <p>Поиск данных по ЖК через открытые API — автоматизация рутины.</p>
+        <a href="#contact" class="port-link">Обсудить похожий →</a>
+      </div>
+    </div>
+    <div class="port-cta rv">
+      <p>Хотите такой же или лучше?</p>
+      <a href="#contact" class="btn btn-p">Обсудить проект</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ PROCESS ══ -->
+<section id="process">
+  <div class="wrap">
+    <span class="tag rv" style="text-align:center;display:block">Как работаю</span>
+    <h2 class="rv" style="text-align:center;margin-bottom:60px">Четыре шага от идеи до результата</h2>
+    <div class="proc-g">
+      <div class="step rv d1">
+        <div class="step-n">01</div>
+        <div class="step-t">Бриф</div>
+        <div class="step-d">Обсуждаем задачу в Telegram или на звонке.</div>
+        <div class="step-r">✦ Понятный план и фиксированная цена</div>
+      </div>
+      <div class="step rv d2">
+        <div class="step-n">02</div>
+        <div class="step-t">Разработка</div>
+        <div class="step-d">Работаю по плану, держу вас в курсе.</div>
+        <div class="step-r">✦ Промежуточные версии на согласование</div>
+      </div>
+      <div class="step rv d3">
+        <div class="step-n">03</div>
+        <div class="step-t">Правки</div>
+        <div class="step-d">Корректирую под ваши пожелания.</div>
+        <div class="step-r">✦ Финальный результат без сюрпризов</div>
+      </div>
+      <div class="step rv d4">
+        <div class="step-n">04</div>
+        <div class="step-t">Сдача</div>
+        <div class="step-d">Передаю всё: доступы, файлы, инструкцию.</div>
+        <div class="step-r">✦ Поддержка 2 недели после сдачи</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ ABOUT ══ -->
+<section id="about">
+  <div class="wrap">
+    <div class="about-g">
+      <div class="about-ph rv">
+        <div class="about-ava">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        </div>
+      </div>
+      <div>
+        <span class="tag rv">О себе</span>
+        <h2 class="rv" style="margin-bottom:22px">Один специалист.<br>Без лишних слов.</h2>
+        <p class="at rv">Помогаю малому бизнесу выглядеть профессионально в интернете и продавать — даже без штатного IT-отдела.</p>
+        <p class="at rv">Работаю с агентствами, кофейнями, риелторами. Знаю: малому бизнесу нужен результат быстро и без лишних затрат.</p>
+        <p class="at rv">Сам учился разрабатывать с нуля — поэтому объясняю всё простым языком и не люблю перегружать проекты лишним.</p>
+        <div class="chips rv">
+          <span class="chip">Сайты</span>
+          <span class="chip">Telegram-боты</span>
+          <span class="chip">AI-агенты</span>
+          <span class="chip">HTML / CSS / JS</span>
+          <span class="chip">Python</span>
+        </div>
+        <a href="#contact" class="btn btn-p rv">Расскажите о проекте →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ TESTIMONIALS ══ -->
+<section id="testimonials">
+  <div class="wrap">
+    <span class="tag rv">Отзывы</span>
+    <h2 class="rv">Что говорят</h2>
+    <p class="sub rv">Первый проект для вас может стать историей успеха на этом месте.</p>
+    <div class="tst-g">
+      <div class="card tst-card rv d1">
+        <div class="tst-q">"</div>
+        <p class="tst-txt">Быстро разобрался в задаче, не задавал лишних вопросов. Лендинг сделал за 5 дней — всё как договорились.</p>
+        <div class="tst-auth">
+          <div class="tst-ava">АК</div>
+          <div>
+            <div class="tst-name">Алексей К.</div>
+            <div class="tst-role">Владелец кофейни</div>
+          </div>
+        </div>
+      </div>
+      <div class="card tst-card rv d2">
+        <div class="tst-q">"</div>
+        <p class="tst-txt">Бот принимает заявки пока я сплю. Раньше терял клиентов ночью — теперь утром уже готовый список.</p>
+        <div class="tst-auth">
+          <div class="tst-ava">МР</div>
+          <div>
+            <div class="tst-name">Мария Р.</div>
+            <div class="tst-role">Частный мастер</div>
+          </div>
+        </div>
+      </div>
+      <div class="card tst-card rv d3">
+        <div class="tst-q">"</div>
+        <p class="tst-txt">Объяснял всё понятно, без жаргона. Я вообще не разбираюсь в IT — и при этом понимала каждый шаг.</p>
+        <div class="tst-auth">
+          <div class="tst-ava">ОС</div>
+          <div>
+            <div class="tst-name">Ольга С.</div>
+            <div class="tst-role">Риелтор</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ FAQ ══ -->
+<section id="faq">
+  <div class="wrap">
+    <span class="tag rv" style="text-align:center;display:block">Вопросы</span>
+    <h2 class="rv" style="text-align:center;margin-bottom:44px">Часто спрашивают</h2>
+    <div class="faq-list">
+      <div class="faq-item rv">
+        <button class="faq-q">Сколько стоит мой проект? <span class="faq-ic">+</span></button>
+        <div class="faq-a"><p>Зависит от задачи. Лендинг — от 15 000₽, Telegram-бот — от 10 000₽, AI-автоматизация — от 25 000₽. Точную цену называю после короткого разговора. Напишите в Telegram — разберёмся за 15 минут.</p></div>
+      </div>
+      <div class="faq-item rv d1">
+        <button class="faq-q">Как долго делаются проекты? <span class="faq-ic">+</span></button>
+        <div class="faq-a"><p>Лендинг — от 1 недели, бот — от 3 дней, автоматизация — от 2 недель. Сроки обсуждаем до старта и фиксируем. Если нужно срочно — скажите, найдём решение.</p></div>
+      </div>
+      <div class="faq-item rv d2">
+        <button class="faq-q">Что если мне не понравится результат? <span class="faq-ic">+</span></button>
+        <div class="faq-a"><p>Делаю правки до вашего одобрения — это входит в стоимость. Количество раундов правок обсуждаем на старте. Сюрпризов не будет.</p></div>
+      </div>
+      <div class="faq-item rv d3">
+        <button class="faq-q">Работаете ли вы по договору? <span class="faq-ic">+</span></button>
+        <div class="faq-a"><p>Да, заключаем договор на оказание услуг. Это защищает обе стороны и даёт уверенность в результате.</p></div>
+      </div>
+      <div class="faq-item rv d4">
+        <button class="faq-q">Нужно ли разбираться в технологиях? <span class="faq-ic">+</span></button>
+        <div class="faq-a"><p>Нет. Объясняю всё простым языком без аббревиатур. Ваша задача — описать, что нужно и для кого. Остальное на мне.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ CONTACT ══ -->
+<section id="contact">
+  <div class="wrap">
+    <div class="ct-g">
+      <div class="ct-info">
+        <span class="tag rv">Контакт</span>
+        <h2 class="rv" style="margin-bottom:18px">Есть задача?<br>Давайте обсудим</h2>
+        <p class="rv">Расскажите о проекте — отвечаю в течение 2 часов в рабочее время. Первая консультация бесплатно.</p>
+        <div class="ct-chs">
+          <a href="https://t.me/your_username" class="ch rv d1" target="_blank">
+            <span class="ch-ic">✈</span> Написать в Telegram
+          </a>
+          <a href="mailto:nestas1985@gmail.com" class="ch rv d2">
+            <span class="ch-ic">@</span> nestas1985@gmail.com
+          </a>
+          <a href="https://github.com/nestas1985" class="ch rv d3" target="_blank">
+            <span class="ch-ic">⌥</span> GitHub — посмотреть код
+          </a>
+        </div>
+      </div>
+
+      <div class="form-box rv">
+        <div class="form-ttl">Оставить заявку</div>
+        <form id="cf" action="https://formsubmit.co/nestas1985@gmail.com" method="POST">
+          <input type="hidden" name="_subject" value="Новая заявка с сайта">
+          <input type="hidden" name="_captcha" value="false">
+          <div class="fg">
+            <label for="nm">Ваше имя</label>
+            <input type="text" id="nm" name="name" placeholder="Как к вам обращаться?" required>
+          </div>
+          <div class="fg">
+            <label for="ct">Telegram или телефон</label>
+            <input type="text" id="ct" name="contact" placeholder="@username или +7 999 000 00 00" required>
+          </div>
+          <div class="fg">
+            <label for="msg">Кратко о задаче <span style="color:var(--text3)">(необязательно)</span></label>
+            <textarea id="msg" name="message" placeholder="Что нужно сделать? Можно в двух словах."></textarea>
+          </div>
+          <button type="submit" class="btn btn-p btn-full">Обсудить проект</button>
+          <p class="form-hint">Или напишите напрямую: <a href="https://t.me/your_username" target="_blank">@your_username</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="wrap">
+    <div class="ft">
+      <div>
+        <a href="#hero" class="logo">Станислав<span>.</span></a>
+        <div class="ft-tag">Сайты · Боты · Автоматизация · СПб</div>
+      </div>
+      <div class="ft-links">
+        <a href="https://github.com/nestas1985" target="_blank">GitHub</a>
+        <a href="https://t.me/your_username" target="_blank">Telegram</a>
+        <a href="#contact">Контакты</a>
+      </div>
+      <div class="ft-copy">© 2026 Станислав Нещерет</div>
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile sticky CTA -->
+<a href="https://t.me/your_username" class="mob-cta" target="_blank">Написать в Telegram →</a>
+
+<script>
+  // ── CURSOR GLOW ──
+  const cg = document.getElementById('cg');
+  if (!window.matchMedia('(hover:none)').matches) {
+    document.addEventListener('mousemove', e => {
+      cg.style.left = e.clientX + 'px';
+      cg.style.top  = e.clientY + 'px';
+    });
+  } else { cg.style.display = 'none'; }
+
+  // ── STICKY HEADER ──
+  const hdr = document.getElementById('hdr');
+  window.addEventListener('scroll', () => hdr.classList.toggle('sc', scrollY > 50));
+
+  // ── BURGER MENU ──
+  const brg  = document.getElementById('brg');
+  const mnav = document.getElementById('mnav');
+  brg.addEventListener('click', () => {
+    brg.classList.toggle('op');
+    mnav.classList.toggle('op');
+    document.body.style.overflow = mnav.classList.contains('op') ? 'hidden' : '';
+  });
+  mnav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    brg.classList.remove('op'); mnav.classList.remove('op');
+    document.body.style.overflow = '';
+  }));
+
+  // ── SCROLL REVEAL ──
+  const ro = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); ro.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -36px 0px' });
+  document.querySelectorAll('.rv').forEach(el => ro.observe(el));
+
+  // ── COUNTERS ──
+  const co = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { runCounter(e.target); co.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-target]').forEach(el => co.observe(el));
+
+  function runCounter(el) {
+    const end = +el.dataset.target, sfx = el.dataset.suffix || '';
+    const dur = 1600, tick = end / (dur / 16);
+    let n = 0;
+    const t = setInterval(() => {
+      n = Math.min(n + tick, end);
+      el.textContent = Math.floor(n) + sfx;
+      if (n >= end) clearInterval(t);
+    }, 16);
+  }
+
+  // ── FAQ ──
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const ans  = item.querySelector('.faq-a');
+      const open = item.classList.contains('op');
+      document.querySelectorAll('.faq-item').forEach(i => {
+        i.classList.remove('op');
+        i.querySelector('.faq-a').classList.remove('op');
+      });
+      if (!open) { item.classList.add('op'); ans.classList.add('op'); }
+    });
+  });
+
+  // ── FORM ──
+  document.getElementById('cf').addEventListener('submit', function() {
+    const b = this.querySelector('button[type=submit]');
+    b.textContent = 'Отправляю…'; b.disabled = true;
+  });
+
+  // ── SMOOTH SCROLL ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior:'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>
