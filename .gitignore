@@ -1,0 +1,20 @@
+# Переменные окружения — токены и секреты НИКОГДА не коммитить
+.env
+.env.local
+.env.production
+
+# Зависимости Node.js (если появятся)
+node_modules/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+npm-debug.log*
+
+# Временные файлы редакторов
+.vscode/settings.json
+*.swp
+*.swo

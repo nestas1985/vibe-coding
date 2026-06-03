@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <!-- Отключаем масштабирование — приложение, не сайт -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>Запись к мастеру</title>
+
+  <!-- Telegram WebApp SDK — обязательно первым скриптом -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Корневой контейнер приложения -->
+  <div id="app">
+    <!-- Все экраны рендерятся сюда через app.js -->
+    <div id="screen"></div>
+  </div>
+
+  <!-- Порядок важен: сначала данные, потом логика -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
