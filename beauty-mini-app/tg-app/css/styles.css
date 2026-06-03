@@ -1013,6 +1013,58 @@ button { font-family: inherit; }
   margin-bottom: 8px;
 }
 
+/* ---------- ОНБОРДИНГ ---------- */
+.onboard-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px 24px;
+  text-align: center;
+  gap: 12px;
+}
+
+.onboard-emoji { font-size: 72px; line-height: 1; }
+
+.onboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.onboard-sub {
+  font-size: 15px;
+  color: var(--hint);
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.onboard-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  margin-top: 16px;
+  background: var(--secondary-bg);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.onboard-feat {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(128,128,128,0.08);
+  text-align: left;
+}
+
+.onboard-feat:last-child { border-bottom: none; }
+
+.onboard-feat-icon { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+.onboard-feat-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.onboard-feat-desc  { font-size: 13px; color: var(--hint); margin-top: 2px; line-height: 1.4; }
+
 /* ---------- ЭКРАН-ОФФЕР ---------- */
 .offer-overlay {
   position: fixed;

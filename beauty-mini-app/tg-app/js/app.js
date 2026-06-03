@@ -38,10 +38,14 @@ function init() {
   document.getElementById('screen').addEventListener('click', onClickDelegate);
 
   loadBookings();
-  goTo('home');
 
-  /* Показываем оффер при первом открытии */
-  showOfferIfNeeded();
+  /* Первый запуск — онбординг, иначе сразу главная */
+  if (!localStorage.getItem('onboarding_done')) {
+    goTo('onboarding');
+  } else {
+    goTo('home');
+    showOfferIfNeeded();
+  }
 }
 
 /* ---------- ТЕМА TELEGRAM ---------- */
@@ -128,6 +132,10 @@ function dispatch(act, v, v2) {
     case 'my-bookings': goTo('my-bookings');  break;
     case 'home':        goHome();             break;
     case 'back':        navigateBack();       break;
+
+    /* Онбординг и поделиться */
+    case 'finish-onboarding': finishOnboarding(); break;
+    case 'share':             shareBot();          break;
 
     /* Выбор услуги */
     case 'pick-service':  pickService(v);     break;
@@ -554,6 +562,7 @@ function buildMasterTabs(active) {
 
 function renderScreen(name) {
   const screens = {
+    'onboarding':      renderOnboarding,
     'home':            renderHome,
     'services':        renderServices,
     'datetime':        renderDatetime,
@@ -568,6 +577,50 @@ function renderScreen(name) {
     'master-clients':  renderMasterClients,
   };
   return (screens[name] || renderHome)();
+}
+
+/* ====== ЭКРАН 00: Онбординг (первый запуск) ====== */
+function renderOnboarding() {
+  const name = S.clientName ? `, ${S.clientName}` : '';
+  return `
+    <div class="screen fade-in">
+      <div class="scroll-area">
+        <div class="onboard-body">
+          <div class="onboard-emoji">💅</div>
+          <h1 class="onboard-title">Привет${name}!</h1>
+          <p class="onboard-sub">Здесь вы можете записаться к мастеру ногтевого сервиса за несколько секунд</p>
+
+          <div class="onboard-features">
+            <div class="onboard-feat">
+              <span class="onboard-feat-icon">📅</span>
+              <div>
+                <div class="onboard-feat-title">Запись онлайн</div>
+                <div class="onboard-feat-desc">Выбираете услугу, дату и время — без звонков и ожидания</div>
+              </div>
+            </div>
+            <div class="onboard-feat">
+              <span class="onboard-feat-icon">🔔</span>
+              <div>
+                <div class="onboard-feat-title">Напомним заранее</div>
+                <div class="onboard-feat-desc">Пришлём уведомление за 24 часа и за 2 часа до визита</div>
+              </div>
+            </div>
+            <div class="onboard-feat">
+              <span class="onboard-feat-icon">✨</span>
+              <div>
+                <div class="onboard-feat-title">Скидка 15%</div>
+                <div class="onboard-feat-desc">На первую запись для новых клиентов</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-bar">
+        <button class="btn btn-primary" data-a="finish-onboarding">Начать</button>
+      </div>
+    </div>
+  `;
 }
 
 /* ====== ЭКРАН 01: Профиль мастера ====== */
@@ -632,7 +685,10 @@ function renderHome() {
 
       <div class="bottom-bar">
         <button class="btn btn-primary" data-a="services">Записаться</button>
-        <button class="btn btn-ghost" data-a="my-bookings">Мои записи</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="flex:1" data-a="my-bookings">Мои записи</button>
+          <button class="btn btn-ghost" style="flex:1" data-a="share">🔗 Поделиться</button>
+        </div>
       </div>
     </div>
   `;
@@ -1194,6 +1250,28 @@ function renderMasterClients() {
       ${buildMasterTabs('clients')}
     </div>
   `;
+}
+
+/* ---------- ОНБОРДИНГ ---------- */
+
+function finishOnboarding() {
+  localStorage.setItem('onboarding_done', '1');
+  haptic('medium');
+  goTo('home');
+  showOfferIfNeeded();
+}
+
+function shareBot() {
+  haptic('light');
+  const text = `Записалась к мастеру ногтевого сервиса через удобный бот 💅 Советую!`;
+  const url  = `https://t.me/${BOT.username}`;
+  if (tg?.switchInlineQuery) {
+    tg.switchInlineQuery('');
+  } else if (tg?.openTelegramLink) {
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+  } else {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+  }
 }
 
 /* ================================================

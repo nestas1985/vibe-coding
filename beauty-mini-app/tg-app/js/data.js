@@ -7,7 +7,8 @@
 /* ---------- TELEGRAM БОТ ---------- */
 /* Замени username на реальный @username бота из @BotFather */
 const BOT = {
-  username: 'your_beauty_bot',
+  username: 'nogti_cool_bot',
+  appUrl:   'https://nestas1985.github.io/vibe-coding/beauty-mini-app/tg-app/',
 };
 
 /* ---------- ПРОФИЛЬ МАСТЕРА ---------- */
