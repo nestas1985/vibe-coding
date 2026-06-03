@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Станислав — Сайты, боты и автоматизация для бизнеса</title>
-  <meta name="description" content="Создаю сайты, Telegram-ботов и AI-автоматизацию для малого бизнеса. Под ключ, за 2–4 недели.">
+  <meta name="description" content="Создаю сайты, Telegram-ботов и AI-автоматизацию для малого бизнеса. Один специалист под ключ.">
   <meta property="og:title" content="Станислав — Цифровой мастер">
   <meta property="og:description" content="Сайты, боты и автоматизация. Один специалист вместо агентства.">
   <meta property="og:type" content="website">
@@ -49,6 +49,11 @@
         radial-gradient(ellipse 60% 50% at 15% 55%, rgba(96,73,234,.07) 0%, transparent 70%),
         radial-gradient(ellipse 50% 40% at 85% 20%, rgba(0,201,177,.05) 0%, transparent 60%);
       pointer-events:none; z-index:0;
+    }
+
+    /* stars canvas */
+    #stars-bg {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
     }
 
     /* cursor glow */
@@ -491,10 +496,55 @@
       .hero-btns { flex-direction:column; width:100%; }
       .hero-btns .btn { width:100%; justify-content:center; }
     }
+
+    /* ── PORTFOLIO PREVIEWS ── */
+    .port-iframe-wrap { width:100%; height:100%; position:relative; }
+    .port-iframe {
+      position:absolute; top:0; left:0;
+      width:1200px; height:760px;
+      transform:scale(0.25); transform-origin:top left;
+      pointer-events:none; border:none;
+    }
+    .tg-mock {
+      height:100%; background:#0e1621;
+      display:flex; flex-direction:column;
+    }
+    .tg-hdr {
+      display:flex; align-items:center; gap:10px;
+      padding:9px 14px; background:#17212b;
+      border-bottom:1px solid rgba(255,255,255,.07); flex-shrink:0;
+    }
+    .tg-hdr-ic {
+      width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      display:flex; align-items:center; justify-content:center; font-size:.95rem;
+    }
+    .tg-hdr-name { font-size:.8rem; font-weight:600; color:#e8f1f4; }
+    .tg-hdr-sub  { font-size:.7rem; color:#6a8fa8; }
+    .tg-msgs { padding:9px 10px; display:flex; flex-direction:column; gap:6px; overflow:hidden; }
+    .tg-bubble {
+      max-width:82%; padding:6px 11px;
+      font-size:.76rem; line-height:1.45; word-break:break-word;
+    }
+    .tg-bubble.user {
+      background:var(--accent); color:#fff;
+      border-radius:12px 12px 4px 12px; align-self:flex-end;
+    }
+    .tg-bubble.bot {
+      background:#182533; color:#c5d9e7;
+      border-radius:12px 12px 12px 4px; align-self:flex-start;
+    }
+
+    /* ── TESTIMONIAL AVATAR WITH PHOTO ── */
+    .tst-ava img {
+      width:100%; height:100%;
+      object-fit:cover; border-radius:50%; display:block;
+    }
   </style>
 </head>
 <body>
 
+<canvas id="stars-bg"></canvas>
 <div id="cg"></div>
 
 <!-- ══ HEADER ══ -->
@@ -539,7 +589,7 @@
           <span class="grad"> работал без вас</span>
         </h1>
         <p class="hero-desc rv d2">
-          Создаю сайты, Telegram-ботов и AI-автоматизацию для малого бизнеса. Один специалист вместо агентства — под ключ, за 2–4 недели.
+          Создаю сайты, Telegram-ботов и AI-автоматизацию для малого бизнеса. Один специалист вместо агентства — под ключ.
         </p>
         <div class="stats rv d2">
           <span class="stat">10+ проектов</span>
@@ -553,11 +603,9 @@
       </div>
 
       <div class="hero-visual rv d2" style="position:relative;display:flex;justify-content:center">
-        <div class="ph">
-          <div class="ava">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-          </div>
-          <span class="ph-txt">← ваше фото здесь</span>
+        <div class="ph" style="padding:0;">
+          <img src="photo_2026-06-03_18-15-25.jpg" alt="Станислав Нещерет"
+               style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:22px;">
         </div>
         <div class="fl tl">🚀 Лендинг за 7 дней</div>
         <div class="fl br">🤖 Бот за 3 дня</div>
@@ -639,8 +687,8 @@
     <div class="port-g">
       <div class="card port-card rv d1">
         <div class="port-prev">
-          <div class="port-img" style="background:linear-gradient(135deg,rgba(96,73,234,.2),rgba(180,150,80,.12))">
-            <span class="port-lbl">vizitka.html</span>
+          <div class="port-iframe-wrap">
+            <iframe src="../vizitka.html" class="port-iframe" scrolling="no" loading="lazy" title="Визитка риелтора"></iframe>
           </div>
           <span class="port-badge">Учебный проект</span>
         </div>
@@ -650,8 +698,8 @@
       </div>
       <div class="card port-card rv d2">
         <div class="port-prev">
-          <div class="port-img" style="background:linear-gradient(135deg,rgba(60,30,120,.25),rgba(0,201,177,.1))">
-            <span class="port-lbl">landing.html</span>
+          <div class="port-iframe-wrap">
+            <iframe src="../landing.html" class="port-iframe" scrolling="no" loading="lazy" title="Лендинг TaskFlow"></iframe>
           </div>
           <span class="port-badge">Учебный проект</span>
         </div>
@@ -661,8 +709,20 @@
       </div>
       <div class="card port-card rv d3">
         <div class="port-prev">
-          <div class="port-img" style="background:linear-gradient(135deg,rgba(0,140,90,.18),rgba(96,73,234,.14))">
-            <span class="port-lbl">bot / API</span>
+          <div class="tg-mock">
+            <div class="tg-hdr">
+              <div class="tg-hdr-ic">🤖</div>
+              <div>
+                <div class="tg-hdr-name">Бот риелтора СПб</div>
+                <div class="tg-hdr-sub">онлайн</div>
+              </div>
+            </div>
+            <div class="tg-msgs">
+              <div class="tg-bubble user">Найди ЖК в Приморском</div>
+              <div class="tg-bubble bot">Нашёл 8 ЖК в Приморском р-не 📋<br>• Северная долина — от 215 т/м²<br>• Живи! В Приморском — от 238 т/м²</div>
+              <div class="tg-bubble user">Застройщик и сдача?</div>
+              <div class="tg-bubble bot">Северная долина:<br>Setl City · Сдача Q2 2026 ✅</div>
+            </div>
           </div>
           <span class="port-badge">В разработке</span>
         </div>
@@ -720,10 +780,9 @@
 <section id="about">
   <div class="wrap">
     <div class="about-g">
-      <div class="about-ph rv">
-        <div class="about-ava">
-          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-        </div>
+      <div class="about-ph rv" style="padding:0;">
+        <img src="photo_2026-06-03_18-15-25.jpg" alt="Станислав Нещерет"
+             style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
       </div>
       <div>
         <span class="tag rv">О себе</span>
@@ -757,7 +816,7 @@
         <div class="tst-q">"</div>
         <p class="tst-txt">Быстро разобрался в задаче, не задавал лишних вопросов. Лендинг сделал за 5 дней — всё как договорились.</p>
         <div class="tst-auth">
-          <div class="tst-ava">АК</div>
+          <div class="tst-ava"><img src="https://i.pravatar.cc/100?img=12" alt="Алексей К."></div>
           <div>
             <div class="tst-name">Алексей К.</div>
             <div class="tst-role">Владелец кофейни</div>
@@ -766,9 +825,9 @@
       </div>
       <div class="card tst-card rv d2">
         <div class="tst-q">"</div>
-        <p class="tst-txt">Бот принимает заявки пока я сплю. Раньше терял клиентов ночью — теперь утром уже готовый список.</p>
+        <p class="tst-txt">Бот принимает заявки пока я сплю. Раньше теряла клиентов ночью — теперь утром уже готовый список.</p>
         <div class="tst-auth">
-          <div class="tst-ava">МР</div>
+          <div class="tst-ava"><img src="https://i.pravatar.cc/100?img=44" alt="Мария Р."></div>
           <div>
             <div class="tst-name">Мария Р.</div>
             <div class="tst-role">Частный мастер</div>
@@ -779,7 +838,7 @@
         <div class="tst-q">"</div>
         <p class="tst-txt">Объяснял всё понятно, без жаргона. Я вообще не разбираюсь в IT — и при этом понимала каждый шаг.</p>
         <div class="tst-auth">
-          <div class="tst-ava">ОС</div>
+          <div class="tst-ava"><img src="https://i.pravatar.cc/100?img=47" alt="Ольга С."></div>
           <div>
             <div class="tst-name">Ольга С.</div>
             <div class="tst-role">Риелтор</div>
@@ -833,14 +892,11 @@
         <h2 class="rv" style="margin-bottom:18px">Есть задача?<br>Давайте обсудим</h2>
         <p class="rv">Расскажите о проекте — отвечаю в течение 2 часов в рабочее время. Первая консультация бесплатно.</p>
         <div class="ct-chs">
-          <a href="https://t.me/your_username" class="ch rv d1" target="_blank">
+          <a href="https://t.me/nestas85" class="ch rv d1" target="_blank">
             <span class="ch-ic">✈</span> Написать в Telegram
           </a>
           <a href="mailto:nestas1985@gmail.com" class="ch rv d2">
             <span class="ch-ic">@</span> nestas1985@gmail.com
-          </a>
-          <a href="https://github.com/nestas1985" class="ch rv d3" target="_blank">
-            <span class="ch-ic">⌥</span> GitHub — посмотреть код
           </a>
         </div>
       </div>
@@ -863,7 +919,7 @@
             <textarea id="msg" name="message" placeholder="Что нужно сделать? Можно в двух словах."></textarea>
           </div>
           <button type="submit" class="btn btn-p btn-full">Обсудить проект</button>
-          <p class="form-hint">Или напишите напрямую: <a href="https://t.me/your_username" target="_blank">@your_username</a></p>
+          <p class="form-hint">Или напишите напрямую: <a href="https://t.me/nestas85" target="_blank">@nestas85</a></p>
         </form>
       </div>
     </div>
@@ -879,8 +935,8 @@
         <div class="ft-tag">Сайты · Боты · Автоматизация · СПб</div>
       </div>
       <div class="ft-links">
-        <a href="https://github.com/nestas1985" target="_blank">GitHub</a>
-        <a href="https://t.me/your_username" target="_blank">Telegram</a>
+        <a href="https://t.me/nestas85" target="_blank">Telegram</a>
+        <a href="mailto:nestas1985@gmail.com">Почта</a>
         <a href="#contact">Контакты</a>
       </div>
       <div class="ft-copy">© 2026 Станислав Нещерет</div>
@@ -889,7 +945,7 @@
 </footer>
 
 <!-- Mobile sticky CTA -->
-<a href="https://t.me/your_username" class="mob-cta" target="_blank">Написать в Telegram →</a>
+<a href="https://t.me/nestas85" class="mob-cta" target="_blank">Написать в Telegram →</a>
 
 <script>
   // ── CURSOR GLOW ──
@@ -968,6 +1024,45 @@
       if (t) { e.preventDefault(); t.scrollIntoView({ behavior:'smooth' }); }
     });
   });
+
+  // ── STARS ──
+  const sc = document.getElementById('stars-bg');
+  const cx = sc.getContext('2d');
+  const COLORS = ['255,255,255', '160,140,255', '0,201,177'];
+  const COUNT  = 90;
+
+  function resize() { sc.width = innerWidth; sc.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rnd(a, b) { return Math.random() * (b - a) + a; }
+
+  const pts = Array.from({ length: COUNT }, () => ({
+    x:  rnd(0, innerWidth),
+    y:  rnd(-innerHeight, innerHeight),
+    r:  rnd(0.4, 1.6),
+    vx: rnd(-0.15, 0.15),
+    vy: rnd(0.15, 0.55),
+    op: rnd(0.08, 0.32),
+    c:  COLORS[Math.floor(Math.random() * COLORS.length)]
+  }));
+
+  function drawStars() {
+    cx.clearRect(0, 0, sc.width, sc.height);
+    for (const p of pts) {
+      cx.beginPath();
+      cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      cx.fillStyle = `rgba(${p.c},${p.op})`;
+      cx.fill();
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.y > sc.height + 10) { p.y = -10; p.x = rnd(0, sc.width); p.op = rnd(0.08, 0.32); }
+      if (p.x < -5) p.x = sc.width + 5;
+      if (p.x > sc.width + 5) p.x = -5;
+    }
+    requestAnimationFrame(drawStars);
+  }
+  drawStars();
 </script>
 </body>
 </html>
