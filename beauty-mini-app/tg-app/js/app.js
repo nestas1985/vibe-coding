@@ -39,6 +39,9 @@ function init() {
 
   loadBookings();
   goTo('home');
+
+  /* Показываем оффер при первом открытии */
+  showOfferIfNeeded();
 }
 
 /* ---------- ТЕМА TELEGRAM ---------- */
@@ -599,12 +602,13 @@ function renderHome() {
           </div>
         </div>
 
-        <!-- Портфолио: CSS-витрины, грузятся всегда -->
+        <!-- Портфолио: живые фото ногтей из папки images/ -->
         <div class="section">
           <p class="section-title">Портфолио</p>
           <div class="portfolio-grid">
             ${PORTFOLIO.map(p => `
-              <div class="portfolio-cell ${p.cssClass}">
+              <div class="portfolio-cell">
+                <img src="${p.photo}" alt="${p.label}" loading="lazy">
                 <div class="portfolio-overlay"></div>
                 <span class="portfolio-label">${p.label}</span>
               </div>
@@ -1190,6 +1194,59 @@ function renderMasterClients() {
       ${buildMasterTabs('clients')}
     </div>
   `;
+}
+
+/* ================================================
+   ЭКРАН-ОФФЕР (показывается один раз при первом входе)
+   ================================================ */
+
+function showOfferIfNeeded() {
+  /* Уже видел — не показываем */
+  if (localStorage.getItem('offer_shown')) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'offer-overlay';
+  overlay.id = 'offer-overlay';
+  overlay.innerHTML = `
+    <div class="offer-card">
+      <div class="offer-emoji">🎁</div>
+      <h2 class="offer-title">Скидка 15% на первую запись</h2>
+      <p class="offer-sub">Подпишитесь на бота — получите промокод в личное сообщение</p>
+      <ul class="offer-bullets">
+        <li>Напомним о записи за день</li>
+        <li>Первыми узнаёте о свободных окошках</li>
+        <li>Эксклюзивные акции для подписчиков</li>
+      </ul>
+      <a class="offer-btn"
+         href="https://t.me/${BOT.username}?start=from_app"
+         target="_blank"
+         id="offer-accept-btn">
+        Получить скидку 15%
+      </a>
+      <button class="offer-skip" id="offer-skip-btn">Пропустить</button>
+    </div>
+  `;
+
+  /* Закрытие по кнопкам и по клику на фон */
+  overlay.querySelector('#offer-accept-btn').addEventListener('click', closeOffer);
+  overlay.querySelector('#offer-skip-btn').addEventListener('click', closeOffer);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeOffer(); });
+
+  document.body.appendChild(overlay);
+
+  /* Небольшая задержка — сначала рендерится главный экран */
+  requestAnimationFrame(() => {
+    setTimeout(() => overlay.classList.add('visible'), 120);
+  });
+}
+
+function closeOffer() {
+  localStorage.setItem('offer_shown', '1');
+  haptic('medium');
+  const overlay = document.getElementById('offer-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('visible');
+  setTimeout(() => overlay.remove(), 320);
 }
 
 /* ---------- ЗАПУСК ---------- */

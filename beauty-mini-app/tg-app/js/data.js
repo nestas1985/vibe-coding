@@ -4,6 +4,12 @@
    Здесь: профиль мастера, услуги, портфолио, демо-клиенты.
    ================================================ */
 
+/* ---------- TELEGRAM БОТ ---------- */
+/* Замени username на реальный @username бота из @BotFather */
+const BOT = {
+  username: 'your_beauty_bot',
+};
+
 /* ---------- ПРОФИЛЬ МАСТЕРА ---------- */
 const MASTER = {
   name:          'Анна Смирнова',
@@ -32,14 +38,14 @@ const SERVICES = [
 ];
 
 /* ---------- ПОРТФОЛИО ---------- */
-/* CSS-витрины: всегда грузятся, никаких внешних зависимостей */
+/* Реальные фото ногтей, скачаны локально в images/ */
 const PORTFOLIO = [
-  { cssClass: 'p-gelac',  label: 'Гель-лак' },
-  { cssClass: 'p-acryl',  label: 'Наращивание' },
-  { cssClass: 'p-french', label: 'Французский' },
-  { cssClass: 'p-ombre',  label: 'Омбре' },
-  { cssClass: 'p-design', label: 'Дизайн' },
-  { cssClass: 'p-nude',   label: 'Нюд' },
+  { photo: 'images/nail1.jpg', label: 'Гель-лак' },
+  { photo: 'images/nail2.jpg', label: 'Наращивание' },
+  { photo: 'images/nail3.jpg', label: 'Французский' },
+  { photo: 'images/nail4.jpg', label: 'Омбре' },
+  { photo: 'images/nail5.jpg', label: 'Дизайн' },
+  { photo: 'images/nail6.jpg', label: 'Нюд' },
 ];
 
 /* ---------- ДЕМО-КЛИЕНТЫ (режим мастера) ---------- */
