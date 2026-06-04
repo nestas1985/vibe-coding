@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).parent
 load_dotenv(BASE_DIR / ".env")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 TODOIST_API_KEY = os.getenv("TODOIST_API_KEY")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID") or "0")
 

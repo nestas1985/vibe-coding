@@ -1,19 +1,18 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from mistralai import Mistral
+from config import MISTRAL_API_KEY
 from profile import profile_to_text
 
-client = Groq(api_key=GROQ_API_KEY)
-MODEL = "llama-3.3-70b-versatile"
+client = Mistral(api_key=MISTRAL_API_KEY)
+MODEL = "mistral-small-latest"
 
 
 def transcribe_voice(audio_path: str) -> str:
-    with open(audio_path, "rb") as f:
-        result = client.audio.transcriptions.create(
-            file=(audio_path, f.read()),
-            model="whisper-large-v3",
-            language="ru",
-        )
-    return result.text
+    import subprocess
+    result = subprocess.run(
+        ["python", "-c", f"print('transcription not supported, use text')"],
+        capture_output=True, text=True
+    )
+    return "[голосовое сообщение — напиши текстом]"
 
 SYSTEM_PROMPT = """Ты — личный AI-ассистент Станислава. Ты знаешь его хорошо и общаешься как умный, дружелюбный помощник.
 Отвечай по-русски. Будь конкретным и кратким. Не используй лишних слов и пустых фраз.
@@ -28,7 +27,7 @@ def ask(user_message: str, extra_context: str = "") -> str:
     if extra_context:
         system += f"\n\nДополнительный контекст:\n{extra_context}"
 
-    response = client.chat.completions.create(
+    response = client.chat.complete(
         model=MODEL,
         messages=[
             {"role": "system", "content": system},
