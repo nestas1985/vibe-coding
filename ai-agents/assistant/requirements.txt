@@ -1,0 +1,6 @@
+aiogram==3.13.0
+apscheduler==3.10.4
+python-dotenv==1.0.1
+groq==0.13.0
+todoist-api-python==3.2.1
+matplotlib==3.9.0
