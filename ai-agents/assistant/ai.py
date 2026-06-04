@@ -48,19 +48,13 @@ def generate_morning_message(tasks: list[str]) -> str:
     date_str = today.strftime("%d.%m.%Y")
 
     if tasks:
+        prompt = f"Напиши одну строку — короткое бодрое утреннее приветствие для Станислава. Сегодня {date_str}, {day_name}. Только приветствие, без задач."
+        greeting = ask(prompt)
         tasks_text = "\n".join(f"{i+1}. {t}" for i, t in enumerate(tasks))
-        total = len(tasks)
-        prompt = f"""Напиши короткое утреннее приветствие для Станислава (1 строка).
-Сегодня: {date_str}, {day_name}.
-После приветствия напиши: "У тебя {total} задач на сегодня:"
-Затем ОБЯЗАТЕЛЬНО выведи все задачи ТОЧНО как написаны ниже, без изменений:
-
-{tasks_text}
-
-В конце — одна короткая мотивирующая фраза."""
+        return f"{greeting}\n\nУ тебя {len(tasks)} задач на сегодня:\n{tasks_text}\n\n💪"
     else:
         prompt = f"Напиши короткое утреннее сообщение для Станислава. Сегодня {date_str}, {day_name}. Задач нет — пожелай хорошего дня."
-    return ask(prompt)
+        return ask(prompt)
 
 
 def process_general_message(text: str) -> dict:
