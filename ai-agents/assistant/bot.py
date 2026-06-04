@@ -28,7 +28,7 @@ class MorningDialog(StatesGroup):
 
 
 async def send_morning_message(bot_or_message, state: FSMContext, tasks: list[str]):
-    text = generate_morning_message(tasks)
+    text = await asyncio.to_thread(generate_morning_message, tasks)
 
     if isinstance(bot_or_message, Bot):
         await bot_or_message.send_message(ADMIN_CHAT_ID, text)
@@ -82,11 +82,11 @@ async def process_user_message(message: Message, text: str, state: FSMContext):
     if current_state == EveningDialog.waiting_for_reply:
         save_evening_reply(text)
         await state.clear()
-        result = process_evening_reply(text)
+        result = await asyncio.to_thread(process_evening_reply, text)
         tasks = result.get("tasks", [])
         response_text = result.get("response", "Записал! Хорошего вечера 🌙")
         if tasks:
-            added = add_tasks(tasks)
+            added = await asyncio.to_thread(add_tasks, tasks)
             tasks_list = "\n".join(f"• {t}" for t in tasks)
             response_text += f"\n\nДобавил в Todoist ({added} из {len(tasks)}):\n{tasks_list}"
         await message.answer(response_text)
@@ -95,11 +95,11 @@ async def process_user_message(message: Message, text: str, state: FSMContext):
         await handle_priorities(message, state)
 
     else:
-        result = process_general_message(text)
+        result = await asyncio.to_thread(process_general_message, text)
         tasks = result.get("tasks", [])
         response_text = result.get("response", "Понял!")
         if tasks:
-            added = add_tasks(tasks)
+            added = await asyncio.to_thread(add_tasks, tasks)
             tasks_list = "\n".join(f"• {t}" for t in tasks)
             response_text += f"\n\nДобавил в Todoist ({added} из {len(tasks)}):\n{tasks_list}"
         await message.answer(response_text)
@@ -126,7 +126,7 @@ async def cmd_profile(message: Message):
 @router.message(Command("morning"))
 async def cmd_morning(message: Message, state: FSMContext):
     await message.answer("Генерирую... ⏳")
-    tasks = get_tasks_today()
+    tasks = await asyncio.to_thread(get_tasks_today)
     await send_morning_message(message, state, tasks)
 
 
