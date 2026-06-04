@@ -12,7 +12,7 @@ from config import TELEGRAM_TOKEN, ADMIN_CHAT_ID
 from database import init_db, save_evening_reply
 from profile import profile_to_text
 from ai import generate_morning_message, process_evening_reply, process_general_message, transcribe_voice
-from todoist import get_tasks_today, add_tasks
+from todoist import get_tasks_today, add_tasks, set_priority
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,6 +21,59 @@ router = Router()
 
 class EveningDialog(StatesGroup):
     waiting_for_reply = State()
+
+
+class MorningDialog(StatesGroup):
+    waiting_for_priorities = State()
+
+
+async def send_morning_message(bot_or_message, state: FSMContext, tasks: list[str]):
+    text = generate_morning_message(tasks)
+
+    if isinstance(bot_or_message, Bot):
+        await bot_or_message.send_message(ADMIN_CHAT_ID, text)
+        if tasks:
+            await bot_or_message.send_message(
+                ADMIN_CHAT_ID,
+                "Есть приоритетные задачи из этого списка?\nНазови номера через запятую (например: 1, 3) или напиши «нет»"
+            )
+    else:
+        await bot_or_message.answer(text)
+        if tasks:
+            await bot_or_message.answer(
+                "Есть приоритетные задачи из этого списка?\nНазови номера через запятую (например: 1, 3) или напиши «нет»"
+            )
+
+    if tasks:
+        await state.set_state(MorningDialog.waiting_for_priorities)
+        await state.update_data(tasks=tasks)
+
+
+@router.message(MorningDialog.waiting_for_priorities)
+async def handle_priorities(message: Message, state: FSMContext):
+    data = await state.get_data()
+    tasks = data.get("tasks", [])
+    text = message.text.strip().lower()
+
+    if text in ["нет", "no", "не", "-"]:
+        await state.clear()
+        await message.answer("Окей, удачного дня! 💪")
+        return
+
+    await state.clear()
+    try:
+        numbers = [int(n.strip()) - 1 for n in text.replace(",", " ").split() if n.strip().isdigit()]
+        priority_tasks = [tasks[i] for i in numbers if 0 <= i < len(tasks)]
+
+        if not priority_tasks:
+            await message.answer("Не понял номера. Попробуй ещё раз или напиши «нет».")
+            return
+
+        marked = [t for t in priority_tasks if set_priority(t)]
+        tasks_list = "\n".join(f"🔴 {t}" for t in marked)
+        await message.answer(f"Отметил как приоритетные в Todoist:\n{tasks_list}\n\nУдачного дня! 💪")
+    except Exception:
+        await message.answer("Не смог разобрать — попробуй написать номера цифрами через запятую.")
 
 
 async def process_user_message(message: Message, text: str, state: FSMContext):
@@ -37,6 +90,10 @@ async def process_user_message(message: Message, text: str, state: FSMContext):
             tasks_list = "\n".join(f"• {t}" for t in tasks)
             response_text += f"\n\nДобавил в Todoist ({added} из {len(tasks)}):\n{tasks_list}"
         await message.answer(response_text)
+
+    elif current_state == MorningDialog.waiting_for_priorities:
+        await handle_priorities(message, state)
+
     else:
         result = process_general_message(text)
         tasks = result.get("tasks", [])
@@ -67,11 +124,10 @@ async def cmd_profile(message: Message):
 
 
 @router.message(Command("morning"))
-async def cmd_morning(message: Message):
+async def cmd_morning(message: Message, state: FSMContext):
     await message.answer("Генерирую... ⏳")
     tasks = get_tasks_today()
-    text = generate_morning_message(tasks)
-    await message.answer(text)
+    await send_morning_message(message, state, tasks)
 
 
 @router.message(Command("myid"))

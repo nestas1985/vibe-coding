@@ -35,3 +35,26 @@ def add_task(text: str) -> bool:
 
 def add_tasks(texts: list[str]) -> int:
     return sum(1 for t in texts if add_task(t))
+
+
+def get_task_id_by_content(content: str) -> str | None:
+    try:
+        pages = list(api.get_tasks())
+        tasks = [t for page in pages for t in page]
+        for t in tasks:
+            if t.content == content:
+                return t.id
+        return None
+    except Exception:
+        return None
+
+
+def set_priority(task_content: str) -> bool:
+    try:
+        task_id = get_task_id_by_content(task_content)
+        if task_id:
+            api.update_task(task_id=task_id, priority=4)
+            return True
+        return False
+    except Exception:
+        return False
