@@ -1,18 +1,13 @@
-from mistralai import Mistral
+import requests
 from config import MISTRAL_API_KEY
 from profile import profile_to_text
 
-client = Mistral(api_key=MISTRAL_API_KEY)
 MODEL = "mistral-small-latest"
+API_URL = "https://api.mistral.ai/v1/chat/completions"
 
 
 def transcribe_voice(audio_path: str) -> str:
-    import subprocess
-    result = subprocess.run(
-        ["python", "-c", f"print('transcription not supported, use text')"],
-        capture_output=True, text=True
-    )
-    return "[голосовое сообщение — напиши текстом]"
+    return "[голосовое — напиши текстом]"
 
 SYSTEM_PROMPT = """Ты — личный AI-ассистент Станислава. Ты знаешь его хорошо и общаешься как умный, дружелюбный помощник.
 Отвечай по-русски. Будь конкретным и кратким. Не используй лишних слов и пустых фраз.
@@ -27,16 +22,21 @@ def ask(user_message: str, extra_context: str = "") -> str:
     if extra_context:
         system += f"\n\nДополнительный контекст:\n{extra_context}"
 
-    response = client.chat.complete(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user_message},
-        ],
-        temperature=0.7,
-        max_tokens=1024,
+    response = requests.post(
+        API_URL,
+        headers={"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"},
+        json={
+            "model": MODEL,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_message},
+            ],
+            "temperature": 0.7,
+            "max_tokens": 1024,
+        },
+        timeout=30,
     )
-    return response.choices[0].message.content
+    return response.json()["choices"][0]["message"]["content"]
 
 
 def generate_morning_message(tasks: list[str]) -> str:
