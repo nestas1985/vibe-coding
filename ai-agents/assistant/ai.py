@@ -5,6 +5,16 @@ from profile import profile_to_text
 client = Groq(api_key=GROQ_API_KEY)
 MODEL = "llama-3.3-70b-versatile"
 
+
+def transcribe_voice(audio_path: str) -> str:
+    with open(audio_path, "rb") as f:
+        result = client.audio.transcriptions.create(
+            file=(audio_path, f.read()),
+            model="whisper-large-v3",
+            language="ru",
+        )
+    return result.text
+
 SYSTEM_PROMPT = """Ты — личный AI-ассистент Станислава. Ты знаешь его хорошо и общаешься как умный, дружелюбный помощник.
 Отвечай по-русски. Будь конкретным и кратким. Не используй лишних слов и пустых фраз.
 
@@ -49,6 +59,25 @@ def generate_morning_message(tasks: list[str]) -> str:
     else:
         prompt = f"Напиши короткое утреннее сообщение для Станислава. Сегодня {date_str}, {day_name}. Задач нет — пожелай хорошего дня."
     return ask(prompt)
+
+
+def process_general_message(text: str) -> dict:
+    prompt = f"""Станислав написал: "{text}"
+
+Определи что он хочет:
+1. Если просит добавить задачу/задачи — выдели их в список под ключом "tasks", напиши подтверждение под ключом "response".
+2. Если задаёт вопрос или просто разговаривает — "tasks" пустой список, ответь под ключом "response".
+
+Ответь строго в формате JSON:
+{{"tasks": ["задача 1"], "response": "текст ответа"}}"""
+    import json
+    raw = ask(prompt)
+    try:
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        return json.loads(raw[start:end])
+    except Exception:
+        return {"tasks": [], "response": raw}
 
 
 def process_evening_reply(reply: str) -> dict:
