@@ -13,6 +13,7 @@ from database import init_db, save_evening_reply
 from profile import profile_to_text
 from ai import generate_morning_message, process_evening_reply, process_general_message, transcribe_voice, parse_task_action
 from todoist import get_tasks_today, add_tasks, set_priority, complete_task, set_recurring, add_task, get_task_id_by_index
+from daily_tasks import save_daily_tasks, load_daily_tasks
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,7 +28,8 @@ class MorningDialog(StatesGroup):
     waiting_for_priorities = State()
 
 
-async def send_morning_message(bot_or_message, state: FSMContext, tasks: list[str]):
+async def send_morning_message(bot_or_message, state: FSMContext, tasks: list[dict]):
+    save_daily_tasks(tasks)
     text = await asyncio.to_thread(generate_morning_message, tasks)
 
     if isinstance(bot_or_message, Bot):
@@ -101,7 +103,7 @@ async def process_user_message(message: Message, text: str, state: FSMContext):
 
         if action == "complete":
             numbers = [n - 1 for n in action_result.get("numbers", [])]
-            today_tasks = await asyncio.to_thread(get_tasks_today)
+            today_tasks = load_daily_tasks() or await asyncio.to_thread(get_tasks_today)
             done = []
             for idx in numbers:
                 task_id = get_task_id_by_index(today_tasks, idx)
@@ -115,7 +117,7 @@ async def process_user_message(message: Message, text: str, state: FSMContext):
         elif action == "recurring":
             idx = action_result.get("number", 1) - 1
             due_string = action_result.get("due_string", "every day")
-            today_tasks = await asyncio.to_thread(get_tasks_today)
+            today_tasks = load_daily_tasks() or await asyncio.to_thread(get_tasks_today)
             task_id = get_task_id_by_index(today_tasks, idx)
             if task_id and set_recurring(task_id, due_string):
                 await message.answer(f"🔁 Сделал задачу повторяющейся: {today_tasks[idx]['content']}")
