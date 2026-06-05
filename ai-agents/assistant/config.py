@@ -7,6 +7,7 @@ load_dotenv(BASE_DIR / ".env")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") or os.getenv("GROQ_API_KEY")
+ASSEMBLYAI_API_KEY = os.getenv("ASSEMBLYAI_API_KEY")
 TODOIST_API_KEY = os.getenv("TODOIST_API_KEY")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID") or "0")
 

@@ -1,5 +1,6 @@
 import requests
-from config import MISTRAL_API_KEY
+import time
+from config import MISTRAL_API_KEY, ASSEMBLYAI_API_KEY
 from profile import profile_to_text
 
 MODEL = "mistral-small-latest"
@@ -7,7 +8,39 @@ API_URL = "https://api.mistral.ai/v1/chat/completions"
 
 
 def transcribe_voice(audio_path: str) -> str:
-    return "[голосовое — напиши текстом]"
+    headers = {"authorization": ASSEMBLYAI_API_KEY}
+
+    with open(audio_path, "rb") as f:
+        upload = requests.post(
+            "https://api.assemblyai.com/v2/upload",
+            headers=headers,
+            data=f,
+            timeout=30,
+        )
+    audio_url = upload.json()["upload_url"]
+
+    response = requests.post(
+        "https://api.assemblyai.com/v2/transcript",
+        headers=headers,
+        json={"audio_url": audio_url, "language_code": "ru"},
+        timeout=30,
+    )
+    transcript_id = response.json()["id"]
+
+    for _ in range(30):
+        time.sleep(2)
+        result = requests.get(
+            f"https://api.assemblyai.com/v2/transcript/{transcript_id}",
+            headers=headers,
+            timeout=10,
+        )
+        status = result.json()["status"]
+        if status == "completed":
+            return result.json().get("text", "")
+        if status == "error":
+            return "[ошибка расшифровки]"
+
+    return "[расшифровка заняла слишком долго]"
 
 SYSTEM_PROMPT = """Ты — личный AI-ассистент Станислава. Ты знаешь его хорошо и общаешься как умный, дружелюбный помощник.
 Отвечай по-русски. Будь конкретным и кратким. Не используй лишних слов и пустых фраз.
