@@ -39,7 +39,17 @@ def ask(user_message: str, extra_context: str = "") -> str:
     return response.json()["choices"][0]["message"]["content"]
 
 
-def generate_morning_message(tasks: list[str]) -> str:
+PRIORITY_EMOJI = {4: "🔴", 3: "🟠", 2: "🔵", 1: ""}
+
+
+def format_task(i: int, task: dict) -> str:
+    priority_icon = PRIORITY_EMOJI.get(task.get("priority", 1), "")
+    recurring_icon = " 🔁" if task.get("recurring") else ""
+    prefix = f"{priority_icon} " if priority_icon else ""
+    return f"{i+1}. {prefix}{task['content']}{recurring_icon}"
+
+
+def generate_morning_message(tasks: list[dict]) -> str:
     from datetime import date
     today = date.today()
     days = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
@@ -49,11 +59,33 @@ def generate_morning_message(tasks: list[str]) -> str:
     if tasks:
         prompt = f"Напиши одну строку — короткое бодрое утреннее приветствие для Станислава. Сегодня {date_str}, {day_name}. Только приветствие, без задач."
         greeting = ask(prompt)
-        tasks_text = "\n".join(f"{i+1}. {t}" for i, t in enumerate(tasks))
+        tasks_text = "\n".join(format_task(i, t) for i, t in enumerate(tasks))
         return f"{greeting}\n\nУ тебя {len(tasks)} задач на сегодня:\n{tasks_text}\n\n💪"
     else:
         prompt = f"Напиши короткое утреннее сообщение для Станислава. Сегодня {date_str}, {day_name}. Задач нет — пожелай хорошего дня."
         return ask(prompt)
+
+
+def parse_task_action(text: str) -> dict:
+    prompt = f"""Станислав написал: "{text}"
+
+Определи что он хочет сделать с задачами. Варианты:
+1. Отметить задачи выполненными — верни {{"action": "complete", "numbers": [1, 3, 5]}}
+2. Сделать задачу повторяющейся — верни {{"action": "recurring", "number": 2, "due_string": "every day"}}
+3. Добавить новую повторяющуюся задачу — верни {{"action": "add_recurring", "text": "почистить зубы", "due_string": "every day"}}
+4. Ничего из этого — верни {{"action": "none"}}
+
+due_string должен быть на английском для Todoist API: "every day", "every monday", "every week", "every month", "every 2 days" и т.д.
+
+Ответь строго в формате JSON."""
+    import json
+    raw = ask(prompt)
+    try:
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        return json.loads(raw[start:end])
+    except Exception:
+        return {"action": "none"}
 
 
 def process_general_message(text: str) -> dict:

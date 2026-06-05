@@ -11,8 +11,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from config import TELEGRAM_TOKEN, ADMIN_CHAT_ID
 from database import init_db, save_evening_reply
 from profile import profile_to_text
-from ai import generate_morning_message, process_evening_reply, process_general_message, transcribe_voice
-from todoist import get_tasks_today, add_tasks, set_priority
+from ai import generate_morning_message, process_evening_reply, process_general_message, transcribe_voice, parse_task_action
+from todoist import get_tasks_today, add_tasks, set_priority, complete_task, set_recurring, add_task, get_task_id_by_index
 
 logging.basicConfig(level=logging.INFO)
 
@@ -95,14 +95,50 @@ async def process_user_message(message: Message, text: str, state: FSMContext):
         await handle_priorities(message, state)
 
     else:
-        result = await asyncio.to_thread(process_general_message, text)
-        tasks = result.get("tasks", [])
-        response_text = result.get("response", "Понял!")
-        if tasks:
-            added = await asyncio.to_thread(add_tasks, tasks)
-            tasks_list = "\n".join(f"• {t}" for t in tasks)
-            response_text += f"\n\nДобавил в Todoist ({added} из {len(tasks)}):\n{tasks_list}"
-        await message.answer(response_text)
+        # Сначала проверяем — вдруг это команда выполнения или повторения
+        action_result = await asyncio.to_thread(parse_task_action, text)
+        action = action_result.get("action", "none")
+
+        if action == "complete":
+            numbers = [n - 1 for n in action_result.get("numbers", [])]
+            today_tasks = await asyncio.to_thread(get_tasks_today)
+            done = []
+            for idx in numbers:
+                task_id = get_task_id_by_index(today_tasks, idx)
+                if task_id and complete_task(task_id):
+                    done.append(f"✅ {today_tasks[idx]['content']}")
+            if done:
+                await message.answer("Выполнено:\n" + "\n".join(done))
+            else:
+                await message.answer("Не нашёл такие задачи. Попробуй ещё раз.")
+
+        elif action == "recurring":
+            idx = action_result.get("number", 1) - 1
+            due_string = action_result.get("due_string", "every day")
+            today_tasks = await asyncio.to_thread(get_tasks_today)
+            task_id = get_task_id_by_index(today_tasks, idx)
+            if task_id and set_recurring(task_id, due_string):
+                await message.answer(f"🔁 Сделал задачу повторяющейся: {today_tasks[idx]['content']}")
+            else:
+                await message.answer("Не смог найти задачу.")
+
+        elif action == "add_recurring":
+            task_text = action_result.get("text", "")
+            due_string = action_result.get("due_string", "every day")
+            if add_task(task_text, due_string):
+                await message.answer(f"🔁 Добавил повторяющуюся задачу: {task_text}")
+            else:
+                await message.answer("Не смог добавить задачу.")
+
+        else:
+            result = await asyncio.to_thread(process_general_message, text)
+            tasks = result.get("tasks", [])
+            response_text = result.get("response", "Понял!")
+            if tasks:
+                added = await asyncio.to_thread(add_tasks, tasks)
+                tasks_list = "\n".join(f"• {t}" for t in tasks)
+                response_text += f"\n\nДобавил в Todoist ({added} из {len(tasks)}):\n{tasks_list}"
+            await message.answer(response_text)
 
 
 @router.message(Command("start"))
