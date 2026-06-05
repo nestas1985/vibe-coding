@@ -1,3 +1,4 @@
+import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -7,15 +8,12 @@ from aiogram.fsm.storage.base import StorageKey
 from config import ADMIN_CHAT_ID, MORNING_HOUR, MORNING_MINUTE, EVENING_HOUR, EVENING_MINUTE
 from database import mark_morning_sent
 from todoist import get_tasks_today
-from datetime import date
 
 
 async def send_morning(bot: Bot, storage: MemoryStorage):
     from bot import send_morning_message
-    from aiogram.fsm.context import FSMContext
-    from aiogram.fsm.storage.base import StorageKey
 
-    tasks = get_tasks_today()
+    tasks = await asyncio.to_thread(get_tasks_today)
     key = StorageKey(bot_id=bot.id, chat_id=ADMIN_CHAT_ID, user_id=ADMIN_CHAT_ID)
     state = FSMContext(storage=storage, key=key)
     await send_morning_message(bot, state, tasks)
