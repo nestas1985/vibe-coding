@@ -19,6 +19,7 @@ const S = {
   viewClientId:     null,       // id клиента для карточки
   bookings:         [],         // все записи (localStorage)
   masterActiveDay:  null,       // выбранный день в расписании мастера
+  clientTab:        'master',   // активная вкладка клиентского меню
 };
 
 /* ---------- СТАРТ ---------- */
@@ -132,6 +133,9 @@ function dispatch(act, v, v2) {
     case 'my-bookings': goTo('my-bookings');  break;
     case 'home':        goHome();             break;
     case 'back':        navigateBack();       break;
+
+    /* Нижние вкладки клиента */
+    case 'client-tab': switchClientTab(v); break;
 
     /* Онбординг и поделиться */
     case 'finish-onboarding': finishOnboarding(); break;
@@ -539,6 +543,42 @@ function buildTimeline(dateStr) {
   }).join('');
 }
 
+/* ---------- ВКЛАДКИ КЛИЕНТА ---------- */
+
+function switchClientTab(tab) {
+  S.clientTab = tab;
+  S.history   = []; // вкладки не добавляются в историю
+  const map = { master: 'home', catalog: 'catalog', portfolio: 'portfolio-tab', bookings: 'my-bookings' };
+  const screenName = map[tab] || 'home';
+  S.screen = screenName;
+  const el = document.getElementById('screen');
+  el.innerHTML = renderScreen(screenName);
+  /* Плавный fade вместо slide — переключение вкладок, не переход */
+  el.firstElementChild?.classList.add('fade-in');
+  if (tg?.BackButton) tg.BackButton.hide();
+  haptic();
+}
+
+function buildClientTabs(active) {
+  const tabs = [
+    { id: 'master',    icon: '👤', label: 'О мастере' },
+    { id: 'catalog',   icon: '💅', label: 'Каталог'   },
+    { id: 'portfolio', icon: '🖼',  label: 'Портфолио' },
+    { id: 'bookings',  icon: '📋', label: 'Мои записи' },
+  ];
+  return `
+    <nav class="client-tabs">
+      ${tabs.map(t => `
+        <button class="c-tab${t.id === active ? ' active' : ''}"
+          data-a="client-tab" data-v="${t.id}">
+          <span class="c-tab-icon">${t.icon}</span>
+          <span class="c-tab-label">${t.label}</span>
+        </button>
+      `).join('')}
+    </nav>
+  `;
+}
+
 function buildMasterTabs(active) {
   const tabs = [
     { id: 'home',     icon: '🏠', label: 'Главная' },
@@ -564,6 +604,8 @@ function renderScreen(name) {
   const screens = {
     'onboarding':      renderOnboarding,
     'home':            renderHome,
+    'catalog':         renderCatalog,
+    'portfolio-tab':   renderPortfolioTab,
     'services':        renderServices,
     'datetime':        renderDatetime,
     'confirm':         renderConfirm,
@@ -678,18 +720,18 @@ function renderHome() {
               <span class="service-row-price">${formatPrice(s.price)}</span>
             </div>
           `).join('')}
-          <button class="link-btn" data-a="services">Все услуги →</button>
+          <button class="link-btn" data-a="client-tab" data-v="catalog">Все услуги →</button>
+        </div>
+
+        <!-- Кнопка записи и поделиться -->
+        <div class="section">
+          <button class="btn btn-primary" data-a="services">Записаться</button>
+          <button class="btn btn-ghost" style="margin-top:4px" data-a="share">🔗 Поделиться с подругой</button>
         </div>
         <div class="spacer"></div>
       </div>
 
-      <div class="bottom-bar">
-        <button class="btn btn-primary" data-a="services">Записаться</button>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost" style="flex:1" data-a="my-bookings">Мои записи</button>
-          <button class="btn btn-ghost" style="flex:1" data-a="share">🔗 Поделиться</button>
-        </div>
-      </div>
+      ${buildClientTabs('master')}
     </div>
   `;
 }
@@ -941,9 +983,73 @@ function renderMyBookings() {
         <div class="spacer"></div>
       </div>
 
-      <div class="bottom-bar">
-        <button class="btn btn-primary" data-a="home">Записаться</button>
+      ${buildClientTabs('bookings')}
+    </div>
+  `;
+}
+
+/* ====== ЭКРАНЫ ВКЛАДОК КЛИЕНТА ====== */
+
+/* Каталог — все услуги с кнопкой записи */
+function renderCatalog() {
+  const groups = groupByCategory(SERVICES);
+  return `
+    <div class="screen">
+      <div class="header">
+        <div class="header-side"></div>
+        <span class="header-title">Каталог услуг</span>
+        <div class="header-side right"></div>
       </div>
+      <div class="scroll-area">
+        ${Object.entries(groups).map(([cat, items]) => `
+          <p class="category-label">${cat}</p>
+          <div style="margin:0 16px 16px">
+            ${items.map(s => `
+              <div class="service-card" data-a="quick-book" data-v="${s.id}">
+                <span class="service-emoji">${s.emoji}</span>
+                <div class="service-info">
+                  <div class="service-name">${s.name}</div>
+                  <div class="service-meta">${formatDuration(s.duration)}</div>
+                </div>
+                <div class="service-right">
+                  <span class="service-price">${formatPrice(s.price)}</span>
+                  <span style="color:var(--accent);font-size:20px;font-weight:300">›</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+        <div class="spacer"></div>
+      </div>
+      ${buildClientTabs('catalog')}
+    </div>
+  `;
+}
+
+/* Портфолио — крупная сетка 2 колонки */
+function renderPortfolioTab() {
+  return `
+    <div class="screen">
+      <div class="header">
+        <div class="header-side"></div>
+        <span class="header-title">Портфолио</span>
+        <div class="header-side right"></div>
+      </div>
+      <div class="scroll-area">
+        <div style="padding:12px 16px 0">
+          <div class="portfolio-grid-2">
+            ${PORTFOLIO.map(p => `
+              <div class="portfolio-cell-2">
+                <img src="${p.photo}" alt="${p.label}" loading="lazy">
+                <div class="portfolio-overlay"></div>
+                <span class="portfolio-label" style="font-size:13px;bottom:10px;left:10px">${p.label}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="spacer"></div>
+      </div>
+      ${buildClientTabs('portfolio')}
     </div>
   `;
 }

@@ -305,6 +305,42 @@ button { font-family: inherit; }
   z-index: 3;
 }
 
+/* Сетка 2 колонки для вкладки Портфолио */
+.portfolio-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.portfolio-cell-2 {
+  aspect-ratio: 1 / 1;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--secondary-bg);
+  transition: opacity 150ms;
+}
+
+.portfolio-cell-2:active { opacity: 0.82; }
+
+.portfolio-cell-2 img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portfolio-cell-2 .portfolio-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 45%, rgba(0,0,0,0.55) 100%);
+  z-index: 2;
+}
+
 /* Фото заполняет ячейку целиком */
 .portfolio-cell img {
   position: absolute;
@@ -864,6 +900,53 @@ button { font-family: inherit; }
 .tl-booking:active { opacity: 0.75; }
 .tl-name    { font-size: 14px; font-weight: 600; color: var(--text); }
 .tl-service { font-size: 12px; color: var(--hint); margin-top: 1px; }
+
+/* ---------- НИЖНИЕ ВКЛАДКИ КЛИЕНТА ---------- */
+.client-tabs {
+  display: flex;
+  background: var(--bg);
+  border-top: 1px solid var(--secondary-bg);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  flex-shrink: 0;
+}
+
+.c-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 2px 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--hint);
+  transition: color 150ms;
+  position: relative;
+  min-height: 56px;
+}
+
+/* Активная вкладка: акцентный цвет Telegram */
+.c-tab.active {
+  color: var(--accent);
+}
+
+/* Верхняя полоска на активной вкладке */
+.c-tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+}
+
+.c-tab:active { opacity: 0.7; }
+
+.c-tab-icon  { font-size: 22px; line-height: 1; }
+.c-tab-label { font-size: 10px; font-weight: 500; }
 
 /* ---------- НИЖНИЕ ТАБЫ МАСТЕРА ---------- */
 .master-tabs {
