@@ -25,22 +25,29 @@
 
 ## 2. Технический стек
 
-### Сервер (Beget VPS, ~800 руб/мес)
+### Инфраструктура
 ```
-OS: Ubuntu 22.04
-RAM: 2–4 GB (хватит до 50 мастеров с запасом)
+Beget VPS (~800 руб/мес) — только для API, бота и веб-сервера
+Supabase (бесплатно до ~500 МБ) — PostgreSQL в облаке, не ставим сами
 ```
 
 | Слой | Технология | Зачем |
 |------|-----------|-------|
 | API | Python + FastAPI | Быстро, async, автодокументация |
 | Бот | aiogram 3.x | Лучший Python-фреймворк для Telegram |
-| БД | PostgreSQL 15 | Реляционные данные, надёжно |
-| Кэш / очереди | Redis | Сессии, задачи на уведомления |
-| Файлы | Beget Object Storage (S3-совместимый) | Фото мастеров и портфолио |
+| БД | **Supabase** (PostgreSQL в облаке) | Готовая БД без настройки, веб-интерфейс, автобэкапы |
+| Кэш / очереди | Redis (на VPS) | Сессии, задачи на уведомления |
+| Файлы | **Supabase Storage** (S3-совместимый) | Фото мастеров и портфолио — в том же Supabase |
 | Планировщик | APScheduler (в Python) | Напоминания за 24ч и 2ч |
-| Веб-сервер | Nginx | Реверс-прокси + SSL |
+| Веб-сервер | Nginx (на VPS) | Реверс-прокси + SSL |
 | HTTPS | Let's Encrypt | Обязательно для Mini App |
+
+### Почему Supabase, а не PostgreSQL на VPS
+- Регистрация → проект готов за 5 минут, настраивать ничего не нужно
+- Бесплатного плана хватит на 50 мастеров с запасом (500 МБ данных + 1 ГБ файлов)
+- Веб-интерфейс для просмотра таблиц — удобно при разработке
+- Автоматические бэкапы каждый день
+- Таблицы из раздела 3 создаются там же без изменений
 
 ### Домен
 ```
@@ -474,15 +481,19 @@ for b in bookings:
 ### .env на сервере
 ```
 BOT_TOKEN=...
-DATABASE_URL=postgresql://user:pass@localhost:5432/beauty
+
+# Supabase — берётся из Settings → API в личном кабинете Supabase
+DATABASE_URL=postgresql://postgres:[password]@db.[project].supabase.co:5432/postgres
+SUPABASE_URL=https://[project].supabase.co
+SUPABASE_KEY=[anon key]                 # публичный ключ (для Storage)
+SUPABASE_SERVICE_KEY=[service_role key] # приватный ключ (для записи в БД)
+
 REDIS_URL=redis://localhost:6379
-YOKASSA_PLATFORM_SHOP_ID=...    # для подписок
+YOKASSA_PLATFORM_SHOP_ID=...    # для подписок платформы
 YOKASSA_PLATFORM_KEY=...
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 SECRET_KEY=...                  # для шифрования yokassa_key мастеров
-STORAGE_BUCKET=...
-STORAGE_KEY=...
 ```
 
 ### Nginx конфиг (упрощённо)
@@ -502,8 +513,9 @@ server {
 ## 12. Что разрабатывать в первую очередь
 
 ### Этап 1 — База (нужна для любой работы)
-- [ ] Настроить VPS: Ubuntu, Nginx, PostgreSQL, Redis
-- [ ] Создать все таблицы БД (раздел 3)
+- [ ] Создать проект на Supabase, получить DATABASE_URL и ключи
+- [ ] Настроить VPS: Ubuntu, Nginx, Redis
+- [ ] Создать все таблицы в Supabase (раздел 3)
 - [ ] FastAPI: авторизация через Telegram initData
 - [ ] API: публичный профиль мастера `/api/app/{slug}`
 - [ ] API: свободные слоты `/api/app/{slug}/slots`
@@ -519,7 +531,7 @@ server {
 ### Этап 3 — Панель мастера
 - [ ] Онбординг мастера через бота (раздел 6)
 - [ ] Mini App панели: редактирование профиля, услуги, расписание
-- [ ] Загрузка фото в S3
+- [ ] Загрузка фото в Supabase Storage
 
 ### Этап 4 — Монетизация
 - [ ] ЮKassa: оплата подписки
@@ -539,6 +551,6 @@ server {
 ## 13. Открытые вопросы (решить перед стартом)
 
 - [ ] Домен платформы — зарегистрировать на Beget
+- [ ] **Supabase** — зарегистрироваться на supabase.com, создать проект, получить ключи
 - [ ] ЮKassa аккаунт для приёма подписок — нужно ИП или самозанятость
 - [ ] Google Cloud Project — создать, получить client_id/secret для Calendar API
-- [ ] Beget Object Storage — включить в личном кабинете Beget
