@@ -18,3 +18,25 @@ npm-debug.log*
 .vscode/settings.json
 *.swp
 *.swo
+
+# Python
+__pycache__/
+*.pyc
+
+# YouTube — тяжёлые видео/исходники и одноразовые дампы, не для git
+# (сценарии, plan.md, промпты, готовые обложки — остаются и коммитятся)
+youtube/Готовые видео/
+youtube/Аральск-7/3 минуты/
+youtube/Аральск-7/*.mp4
+youtube/Аральск-7/*.webp
+youtube/Аральск-7/*.gif
+youtube/Аральск-7/*.jpg
+youtube/Аральск-7/*.jpeg
+youtube/Аральск-7/*.JPG
+youtube/Аральск-7/*.png
+youtube/extracted.txt
+youtube/*.pdf
+youtube/Земля Санникова/для видео/
+youtube/Земля Санникова/*.mp3
+youtube/Земля Санникова/*.mp4
+youtube/Земля Санникова/*.wav
