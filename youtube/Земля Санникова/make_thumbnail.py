@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).parent
-SRC = HERE / "thumb_raw" / "001.jpg"
+SRC = HERE / "thumb_raw" / "nanabanana.jpg"
 OUT_DIR = HERE / "ctr"
 OUT_DIR.mkdir(exist_ok=True)
 
@@ -22,11 +22,21 @@ FONTS = {
 
 def load_and_crop(path: Path) -> Image.Image:
     img = Image.open(path).convert("RGB")
-    scale = W / img.width
-    img = img.resize((W, int(img.height * scale)))
-    # top-anchored crop — сохраняем пустое небо сверху для текста
-    img = img.crop((0, 0, W, H))
+    # исходник уже 16:9 (2560x1440) — просто уменьшаем, без обрезки
+    img = img.resize((W, H))
     return img
+
+
+def add_top_gradient(img: Image.Image, height: int, max_alpha: int = 140):
+    """Лёгкое затемнение сверху — гарантирует читаемость текста на любом фоне."""
+    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    grad = ImageDraw.Draw(overlay)
+    for y in range(height):
+        alpha = int(max_alpha * (1 - y / height))
+        grad.line([(0, y), (img.width, y)], fill=(5, 10, 25, alpha))
+    img = img.convert("RGBA")
+    img = Image.alpha_composite(img, overlay)
+    return img.convert("RGB")
 
 
 def draw_text_with_outline(draw, xy, text, font, fill, outline, outline_width):
@@ -41,6 +51,7 @@ def draw_text_with_outline(draw, xy, text, font, fill, outline, outline_width):
 
 def make_variant(font_key: str, font_path: str):
     img = load_and_crop(SRC)
+    img = add_top_gradient(img, height=320)
     draw = ImageDraw.Draw(img)
 
     # красная плашка с датой (верх, справа)

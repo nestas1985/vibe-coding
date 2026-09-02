@@ -37,6 +37,8 @@ youtube/Аральск-7/*.png
 youtube/extracted.txt
 youtube/*.pdf
 youtube/Земля Санникова/для видео/
-youtube/Земля Санникова/*.mp3
-youtube/Земля Санникова/*.mp4
-youtube/Земля Санникова/*.wav
+# Аудио/видео озвучки и исходники для монтажа — в любой папке видео, не только выше
+youtube/**/*.mp3
+youtube/**/*.mp4
+youtube/**/*.wav
+youtube/**/для видео/
